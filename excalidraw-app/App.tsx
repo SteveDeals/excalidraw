@@ -1042,8 +1042,9 @@ const ExcalidrawWrapper = () => {
 
           return (
             <div className="excalidraw-ui-top-right">
-              {/* voxen: one-click SVG/PNG export of the current canvas */}
-              {excalidrawAPI && (
+              {/* voxen: one-click SVG/PNG export of the current canvas —
+                  hidden in the read-only ?scene= static view */}
+              {excalidrawAPI && !isStaticSceneView && (
                 <ExportImageButtons excalidrawAPI={excalidrawAPI} />
               )}
               {collabUI}
