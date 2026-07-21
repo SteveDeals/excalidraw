@@ -57,6 +57,18 @@
     <link rel="canonical" href="https://excalidraw.com" />
 
     <!------------------------------------------------------------------------->
+    <!--   voxen: seed dark as the default theme for first-time visitors.     -->
+    <!--   Runs before setTheme() below and before the app bundle, so there   -->
+    <!--   is no light flash and an existing user choice is never overridden. -->
+    <script>
+      try {
+        if (window.localStorage.getItem("excalidraw-theme") === null) {
+          window.localStorage.setItem("excalidraw-theme", "dark");
+        }
+      } catch (e) {}
+    </script>
+
+    <!------------------------------------------------------------------------->
     <!--   to minimize white flash on load when user has dark mode enabled   -->
     <script>
       try {

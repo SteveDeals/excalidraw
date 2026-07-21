@@ -212,6 +212,14 @@ const shareableLinkConfirmDialog = {
   color: "danger",
 } as const;
 
+// voxen: `?scene=<name>` opens a same-origin static `.excalidraw` file
+// read-only (view mode). The name is restricted to alphanumerics/dashes to
+// prevent path traversal. When the param is absent, init is unchanged.
+const STATIC_SCENE_NAME_RE = /^[a-zA-Z0-9-]+$/;
+
+const getStaticSceneParam = (): string | null =>
+  new URLSearchParams(window.location.search).get("scene");
+
 const initializeScene = async (opts: {
   collabAPI: CollabAPI | null;
   excalidrawAPI: ExcalidrawImperativeAPI;
@@ -227,6 +235,43 @@ const initializeScene = async (opts: {
     /^#json=([a-zA-Z0-9_-]+),([a-zA-Z0-9_-]+)$/,
   );
   const externalUrlMatch = window.location.hash.match(/^#url=(.*)$/);
+
+  // voxen read-only deep-link: load a same-origin static scene and skip the
+  // localStorage/collab paths entirely. Absent `?scene=` → unchanged below.
+  const staticSceneName = getStaticSceneParam();
+  if (staticSceneName !== null) {
+    try {
+      if (!STATIC_SCENE_NAME_RE.test(staticSceneName)) {
+        throw new Error("invalid scene name");
+      }
+      const request = await fetch(
+        `${import.meta.env.BASE_URL}scenes/${staticSceneName}.excalidraw`,
+      );
+      if (!request.ok) {
+        throw new Error(`scene fetch failed (${request.status})`);
+      }
+      // loadFromBlob normalizes via restoreElements/restoreAppState, same as
+      // the #url= handler below.
+      const scene = await loadFromBlob(await request.blob(), null, null);
+      return {
+        scene: { ...scene, scrollToContent: true },
+        isExternalScene: false,
+      };
+    } catch (error: any) {
+      // Leave an empty canvas rather than white-screening, and surface the
+      // failure as a toast. Deferred to a macrotask so it lands *after* the
+      // core editor applies initialData (init resets appState.toast to null),
+      // otherwise the toast would be immediately wiped.
+      window.setTimeout(() => {
+        opts.excalidrawAPI.setToast({
+          message: t("alerts.couldNotLoadInvalidFile"),
+          closable: true,
+          duration: Infinity,
+        });
+      }, 0);
+      return { scene: null, isExternalScene: false };
+    }
+  }
 
   const localDataState = importFromLocalStorage();
 
@@ -377,6 +422,10 @@ const ExcalidrawWrapper = () => {
   const isCollabDisabled = isRunningInIframe();
 
   const { editorTheme, appTheme, setAppTheme } = useHandleAppTheme();
+
+  // voxen: `?scene=<name>` renders a static scene read-only (see
+  // initializeScene). Stable for the page load.
+  const isStaticSceneView = getStaticSceneParam() !== null;
 
   const [langCode, setLangCode] = useAppLangCode();
 
@@ -679,6 +728,12 @@ const ExcalidrawWrapper = () => {
     appState: AppState,
     files: BinaryFiles,
   ) => {
+    // voxen: a read-only static scene must never clobber the user's own
+    // localStorage canvas.
+    if (isStaticSceneView) {
+      return;
+    }
+
     if (collabAPI?.isCollaborating()) {
       collabAPI.syncElements(elements);
     }
@@ -950,6 +1005,7 @@ const ExcalidrawWrapper = () => {
         detectScroll={false}
         handleKeyboardGlobally={true}
         autoFocus={true}
+        viewModeEnabled={isStaticSceneView ? true : undefined}
         theme={editorTheme}
         onThemeChange={setAppTheme}
         renderTopRightUI={(isMobile) => {
