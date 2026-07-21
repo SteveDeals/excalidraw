@@ -1,0 +1,39 @@
+// voxen: one-click SVG/PNG export buttons in the top-right UI. Theme-aware via
+// Excalidraw's CSS variables so it follows the dark default.
+.voxen-export-buttons {
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+
+  .voxen-export-button {
+    height: 2.25rem;
+    min-width: 2.75rem;
+    padding: 0 0.6rem;
+    font-family: inherit;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--text-primary-color);
+    background-color: var(--island-bg-color);
+    border: 1px solid var(--default-border-color);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-island);
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+
+    &:hover:not(:disabled) {
+      background-color: var(--button-hover-bg);
+    }
+
+    &:active:not(:disabled) {
+      background-color: var(--color-primary);
+      color: var(--color-primary-contrast, #fff);
+      border-color: var(--color-primary);
+    }
+
+    &:disabled {
+      cursor: default;
+      opacity: 0.6;
+    }
+  }
+}
