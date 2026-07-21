@@ -1,0 +1,37 @@
+# Compose stack for excalidraw (self-hosted) -> https://labs.voxen.dev/diagrams
+#
+# Static SPA: the build/ output is compiled with Vite base=/diagrams/ and
+# served by nginx. Joins the shared external `traefik-network`; route via
+# Traefik labels. Uses a stripprefix middleware (strip-and-rebase SPA,
+# like nexa-web), unlike the Next.js apps (care) that are basePath-aware.
+#
+# To update: rebuild locally (yarn --cwd ./excalidraw-app vite build
+# --base=/diagrams/), rsync build/ -> ~/lab/diagrams/html/, then
+# `docker compose restart` (or `up -d`).
+
+services:
+  web:
+    image: nginx:alpine
+    container_name: diagrams-web
+    restart: unless-stopped
+    volumes:
+      - ./html:/usr/share/nginx/html:ro
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - traefik-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik-network"
+      # Longer rule than the bare Host(labs.voxen.dev) landing page, but set
+      # an explicit priority so /diagrams always wins over it.
+      - "traefik.http.routers.diagrams.rule=Host(`labs.voxen.dev`) && PathPrefix(`/diagrams`)"
+      - "traefik.http.routers.diagrams.entrypoints=websecure"
+      - "traefik.http.routers.diagrams.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.diagrams.priority=100"
+      - "traefik.http.routers.diagrams.middlewares=diagrams-strip"
+      - "traefik.http.middlewares.diagrams-strip.stripprefix.prefixes=/diagrams"
+      - "traefik.http.services.diagrams.loadbalancer.server.port=80"
+
+networks:
+  traefik-network:
+    external: true

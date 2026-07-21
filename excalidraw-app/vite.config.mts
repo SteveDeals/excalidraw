@@ -162,6 +162,10 @@ export default defineConfig(({ mode }) => {
         },
 
         workbox: {
+          // voxen: the SPA navigate-fallback would otherwise serve the app
+          // shell for /scenes/ (the static dark scene-index page + the
+          // JSON autoindex endpoint). Deny it so those hit the network/nginx.
+          navigateFallbackDenylist: [/\/scenes\//, /\/scene-list\//],
           // don't precache fonts, locales and separate chunks
           globIgnores: [
             "fonts.css",
