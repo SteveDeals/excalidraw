@@ -138,16 +138,22 @@ export const FONT_FAMILY = {
   "Comic Shanns": 8,
   "Liberation Sans": 9,
   Assistant: 10,
+  // voxen: additional self-hosted OFL families (ids are serialized into saved
+  // scenes, so they must stay unique + stable forever)
+  Inter: 11,
+  Lora: 12,
 };
 
 // Segoe UI Emoji fails to properly fallback for some glyphs: ∞, ∫, ≠
 // so we need to have generic font fallback before it
 export const SANS_SERIF_GENERIC_FONT = "sans-serif";
 export const MONOSPACE_GENERIC_FONT = "monospace";
+export const SERIF_GENERIC_FONT = "serif";
 
 export const FONT_FAMILY_GENERIC_FALLBACKS = {
   [SANS_SERIF_GENERIC_FONT]: 998,
   [MONOSPACE_GENERIC_FONT]: 999,
+  [SERIF_GENERIC_FONT]: 997,
 };
 
 export const FONT_FAMILY_FALLBACKS = {
@@ -163,6 +169,9 @@ export function getGenericFontFamilyFallback(
     case FONT_FAMILY.Cascadia:
     case FONT_FAMILY["Comic Shanns"]:
       return MONOSPACE_GENERIC_FONT;
+
+    case FONT_FAMILY.Lora:
+      return SERIF_GENERIC_FONT;
 
     default:
       return SANS_SERIF_GENERIC_FONT;

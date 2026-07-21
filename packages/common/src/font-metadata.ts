@@ -111,6 +111,23 @@ export const FONT_METADATA: Record<number, FontMetadata> = {
     },
     private: true,
   },
+  // voxen: metrics read from the shipped woff2 (OS/2 sTypo asc/desc)
+  [FONT_FAMILY.Inter]: {
+    metrics: {
+      unitsPerEm: 2048,
+      ascender: 1984,
+      descender: -494,
+      lineHeight: 1.25,
+    },
+  },
+  [FONT_FAMILY.Lora]: {
+    metrics: {
+      unitsPerEm: 1000,
+      ascender: 1006,
+      descender: -274,
+      lineHeight: 1.25,
+    },
+  },
   [FONT_FAMILY_FALLBACKS.Xiaolai]: {
     metrics: {
       unitsPerEm: 1000,
