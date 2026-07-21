@@ -213,9 +213,10 @@ const shareableLinkConfirmDialog = {
   color: "danger",
 } as const;
 
-// voxen: `?scene=<name>` opens a same-origin static `.excalidraw` file
-// read-only (view mode). The name is restricted to alphanumerics/dashes to
-// prevent path traversal. When the param is absent, init is unchanged.
+// voxen: `?scene=<name>` loads a same-origin static `.excalidraw` file into
+// the working canvas — editable, and edits autosave to localStorage like any
+// other drawing. The name is restricted to alphanumerics/dashes to prevent
+// path traversal. When the param is absent, init is unchanged.
 const STATIC_SCENE_NAME_RE = /^[a-zA-Z0-9-]+$/;
 
 const getStaticSceneParam = (): string | null =>
@@ -237,8 +238,9 @@ const initializeScene = async (opts: {
   );
   const externalUrlMatch = window.location.hash.match(/^#url=(.*)$/);
 
-  // voxen read-only deep-link: load a same-origin static scene and skip the
-  // localStorage/collab paths entirely. Absent `?scene=` → unchanged below.
+  // voxen deep-link: load a same-origin static scene as the initial canvas
+  // data. It stays fully editable and autosaves like any other drawing.
+  // Absent `?scene=` → unchanged below.
   const staticSceneName = getStaticSceneParam();
   if (staticSceneName !== null) {
     try {
@@ -423,10 +425,6 @@ const ExcalidrawWrapper = () => {
   const isCollabDisabled = isRunningInIframe();
 
   const { editorTheme, appTheme, setAppTheme } = useHandleAppTheme();
-
-  // voxen: `?scene=<name>` renders a static scene read-only (see
-  // initializeScene). Stable for the page load.
-  const isStaticSceneView = getStaticSceneParam() !== null;
 
   const [langCode, setLangCode] = useAppLangCode();
 
@@ -729,12 +727,6 @@ const ExcalidrawWrapper = () => {
     appState: AppState,
     files: BinaryFiles,
   ) => {
-    // voxen: a read-only static scene must never clobber the user's own
-    // localStorage canvas.
-    if (isStaticSceneView) {
-      return;
-    }
-
     if (collabAPI?.isCollaborating()) {
       collabAPI.syncElements(elements);
     }
@@ -1006,7 +998,6 @@ const ExcalidrawWrapper = () => {
         detectScroll={false}
         handleKeyboardGlobally={true}
         autoFocus={true}
-        viewModeEnabled={isStaticSceneView ? true : undefined}
         theme={editorTheme}
         onThemeChange={setAppTheme}
         renderTopRightUI={(isMobile) => {
@@ -1042,9 +1033,8 @@ const ExcalidrawWrapper = () => {
 
           return (
             <div className="excalidraw-ui-top-right">
-              {/* voxen: one-click SVG/PNG export of the current canvas —
-                  hidden in the read-only ?scene= static view */}
-              {excalidrawAPI && !isStaticSceneView && (
+              {/* voxen: one-click SVG/PNG export of the current canvas */}
+              {excalidrawAPI && (
                 <ExportImageButtons excalidrawAPI={excalidrawAPI} />
               )}
               {collabUI}

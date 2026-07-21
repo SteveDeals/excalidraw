@@ -1,9 +1,22 @@
-// define `EXCALIDRAW_ASSET_PATH` as a SSOT
-const OSS_FONTS_CDN = "https://excalidraw.nyc3.cdn.digitaloceanspaces.com/oss/";
-const OSS_FONTS_FALLBACK = "/";
+// voxen self-hosted fork: serve ALL fonts from our own origin instead of
+// Excalidraw's DigitalOcean CDN (which 403s cross-origin on the /diagrams
+// deploy and forces a subset fallback). Two things drive font loading:
+//   1. UI font (Assistant) — loaded via `packages/excalidraw/fonts/fonts.css`
+//      `@font-face` before the editor boots. The source css already points at
+//      local `../fonts/Assistant/*.woff2`; upstream's app build used to rewrite
+//      those to the CDN, so we simply DON'T rewrite them — they bundle locally.
+//   2. Canvas/picker fonts (Excalifont, Nunito, Comic Shanns, …) — resolved at
+//      runtime against `window.EXCALIDRAW_ASSET_PATH`. Their asset paths already
+//      carry the Vite base (e.g. `/diagrams/fonts/…`), so the asset ROOT is just
+//      the origin, "/". Setting a single local path removes the CDN attempt (and
+//      its 403) entirely; ExcalidrawFontFace still keeps its esm.sh safety net.
+
+// Serve fonts from our own origin. The per-font asset paths already include the
+// Vite base, so this is the origin root, not the base.
+const LOCAL_ASSET_PATH = "/";
 
 /**
- * Custom vite plugin for auto-prefixing `EXCALIDRAW_ASSET_PATH` woff2 fonts in `excalidraw-app`.
+ * Custom vite plugin to self-host `EXCALIDRAW_ASSET_PATH` woff2 fonts in `excalidraw-app`.
  *
  * @returns {import("vite").PluginOption}
  */
@@ -17,94 +30,17 @@ module.exports.woff2BrowserPlugin = () => {
       isDev = command === "serve";
     },
     transform(code, id) {
-      // using copy / replace as fonts defined in the `.css` don't have to be manually copied over (vite/rollup does this automatically),
-      // but at the same time can't be easily prefixed with the `EXCALIDRAW_ASSET_PATH` only for the `excalidraw-app`
-      if (!isDev && id.endsWith("/excalidraw/fonts/fonts.css")) {
-        return `/* WARN: The following content is generated during excalidraw-app build */
-
-      @font-face {
-        font-family: "Assistant";
-        src: url(${OSS_FONTS_CDN}fonts/Assistant/Assistant-Regular.woff2)
-            format("woff2"),
-          url(./Assistant-Regular.woff2) format("woff2");
-        font-weight: 400;
-        style: normal;
-        display: swap;
-      }
-
-      @font-face {
-        font-family: "Assistant";
-        src: url(${OSS_FONTS_CDN}fonts/Assistant/Assistant-Medium.woff2)
-            format("woff2"),
-          url(./Assistant-Medium.woff2) format("woff2");
-        font-weight: 500;
-        style: normal;
-        display: swap;
-      }
-
-      @font-face {
-        font-family: "Assistant";
-        src: url(${OSS_FONTS_CDN}fonts/Assistant/Assistant-SemiBold.woff2)
-            format("woff2"),
-          url(./Assistant-SemiBold.woff2) format("woff2");
-        font-weight: 600;
-        style: normal;
-        display: swap;
-      }
-
-      @font-face {
-        font-family: "Assistant";
-        src: url(${OSS_FONTS_CDN}fonts/Assistant/Assistant-Bold.woff2)
-            format("woff2"),
-          url(./Assistant-Bold.woff2) format("woff2");
-        font-weight: 700;
-        style: normal;
-        display: swap;
-      }`;
-      }
-
+      // Point the runtime font asset path at our own origin (no CDN), and drop
+      // the CDN <link rel="preload"> tags: their hashes don't match our locally
+      // emitted files (would 404) and they'd hit the CDN cross-origin anyway.
+      // A brief first-paint font swap is an acceptable trade for zero 403s.
       if (!isDev && id.endsWith("excalidraw-app/index.html")) {
         return code.replace(
           "<!-- PLACEHOLDER:EXCALIDRAW_APP_FONTS -->",
           `<script>
-        // point into our CDN in prod, fallback to root (excalidraw.com) domain in case of issues
-        window.EXCALIDRAW_ASSET_PATH = [
-          "${OSS_FONTS_CDN}",
-          "${OSS_FONTS_FALLBACK}",
-        ];
-      </script>
-
-      <!-- Preload all default fonts to avoid swap on init -->
-      <link
-        rel="preload"
-        href="${OSS_FONTS_CDN}fonts/Excalifont/Excalifont-Regular-a88b72a24fb54c9f94e3b5fdaa7481c9.woff2"
-        as="font"
-        type="font/woff2"
-        crossorigin="anonymous"
-      />
-      <!-- For Nunito only preload the latin range, which should be good enough for now -->
-      <link
-        rel="preload"
-        href="${OSS_FONTS_CDN}fonts/Nunito/Nunito-Regular-XRXI3I6Li01BKofiOc5wtlZ2di8HDIkhdTQ3j6zbXWjgeg.woff2"
-        as="font"
-        type="font/woff2"
-        crossorigin="anonymous"
-      />
-      <link
-        rel="preload"
-        href="${OSS_FONTS_CDN}fonts/Assistant/Assistant-SemiBold.woff2"
-        as="font"
-        type="font/woff2"
-        crossorigin="anonymous"
-      />
-      <link
-        rel="preload"
-        href="${OSS_FONTS_CDN}fonts/ComicShanns/ComicShanns-Regular-279a7b317d12eb88de06167bd672b4b4.woff2"
-        as="font"
-        type="font/woff2"
-        crossorigin="anonymous"
-      />
-    `,
+        // voxen: self-host fonts from our own origin (see woff2-vite-plugins.js)
+        window.EXCALIDRAW_ASSET_PATH = "${LOCAL_ASSET_PATH}";
+      </script>`,
         );
       }
     },
