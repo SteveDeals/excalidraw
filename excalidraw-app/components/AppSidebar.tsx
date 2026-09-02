@@ -1,130 +1,47 @@
-import { DefaultSidebar, Sidebar, THEME } from "@excalidraw/excalidraw";
-import {
-  messageCircleIcon,
-  presentationIcon,
-} from "@excalidraw/excalidraw/components/icons";
-import { LinkButton } from "@excalidraw/excalidraw/components/LinkButton";
+import { DefaultSidebar, Sidebar } from "@excalidraw/excalidraw";
 import { useUIAppState } from "@excalidraw/excalidraw/context/ui-appState";
+
+import { FilesSidebar, FILES_SIDEBAR_TAB } from "./FilesSidebar";
 
 import "./AppSidebar.scss";
 
-type SidebarPromoCopyProps = {
-  text: string;
-};
+// voxen: the default sidebar carries the Library tab (built in) plus our
+// "Files" tab — folders + saved diagrams on the server. The two Excalidraw+
+// promo tabs (comments / presentation) that upstream ships here were removed
+// with the de-brand.
 
-const SidebarPromoCopy = (props: SidebarPromoCopyProps) => {
-  return (
-    <div className="app-sidebar-promo-copy">
-      <div className="app-sidebar-promo-illustration" aria-hidden="true">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 300 250"
-          className="app-sidebar-promo-heart"
-        >
-          <path
-            d="M 145 75
-           C 110 35, 60 55, 65 120
-           C 70 180, 140 190, 215 200
-           C 225 180, 260 110, 235 55
-           C 210 -5, 140 20, 160 105"
-            fill="none"
-            stroke="#D06B64"
-            strokeWidth="16"
-            strokeLinecap="round"
-          />
-        </svg>
-
-        <div className="app-sidebar-promo-trial-note excalifont">
-          14 days of
-          <br />
-          free trial
-        </div>
-        <svg
-          className="app-sidebar-promo-trial-arrow"
-          viewBox="0 0 72 48"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M5 6C23 1 50 8 48 32"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-          />
-          <path
-            d="M42 26L48 32L54 26"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      </div>
-      <div className="app-sidebar-promo-text">{props.text}</div>
-    </div>
-  );
-};
+const FilesIcon = (
+  <svg
+    viewBox="0 0 24 24"
+    width="20"
+    height="20"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M5 4h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" />
+  </svg>
+);
 
 export const AppSidebar = () => {
-  const { theme, openSidebar } = useUIAppState();
+  const { openSidebar } = useUIAppState();
 
   return (
     <DefaultSidebar>
       <DefaultSidebar.TabTriggers>
         <Sidebar.TabTrigger
-          tab="comments"
-          style={{ opacity: openSidebar?.tab === "comments" ? 1 : 0.4 }}
+          tab={FILES_SIDEBAR_TAB}
+          title="Files — folders & saved diagrams"
+          style={{ opacity: openSidebar?.tab === FILES_SIDEBAR_TAB ? 1 : 0.4 }}
         >
-          {messageCircleIcon}
-        </Sidebar.TabTrigger>
-        <Sidebar.TabTrigger
-          tab="presentation"
-          style={{ opacity: openSidebar?.tab === "presentation" ? 1 : 0.4 }}
-        >
-          {presentationIcon}
+          {FilesIcon}
         </Sidebar.TabTrigger>
       </DefaultSidebar.TabTriggers>
-      <Sidebar.Tab tab="comments">
-        <div className="app-sidebar-promo-container">
-          <div
-            className="app-sidebar-promo-image"
-            style={{
-              ["--image-source" as any]: `url(/sidebar-comments-promo-${
-                theme === THEME.DARK ? "dark" : "light"
-              }.jpg)`,
-              opacity: 0.9,
-            }}
-          />
-          <SidebarPromoCopy text="Make comments with Excalidraw+" />
-          <LinkButton
-            href={`${
-              import.meta.env.VITE_APP_PLUS_LP
-            }/plus?utm_source=excalidraw&utm_medium=app&utm_content=comments_promo#excalidraw-redirect`}
-          >
-            Sign up now
-          </LinkButton>
-        </div>
-      </Sidebar.Tab>
-      <Sidebar.Tab tab="presentation" className="px-3">
-        <div className="app-sidebar-promo-container">
-          <div
-            className="app-sidebar-promo-image"
-            style={{
-              ["--image-source" as any]: `url(/sidebar-presentation-promo-${
-                theme === THEME.DARK ? "dark" : "light"
-              }.jpg)`,
-              opacity: 0.7,
-            }}
-          />
-          <SidebarPromoCopy text="Create presentation with Excalidraw+" />
-          <LinkButton
-            href={`${
-              import.meta.env.VITE_APP_PLUS_LP
-            }/plus?utm_source=excalidraw&utm_medium=app&utm_content=presentations_promo#excalidraw-redirect`}
-          >
-            Sign up now
-          </LinkButton>
-        </div>
+      <Sidebar.Tab tab={FILES_SIDEBAR_TAB}>
+        <FilesSidebar />
       </Sidebar.Tab>
     </DefaultSidebar>
   );
