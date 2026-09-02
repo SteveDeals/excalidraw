@@ -8,6 +8,9 @@
 # To update: rebuild locally (yarn --cwd ./excalidraw-app vite build
 # --base=/diagrams/), rsync build/ -> ~/lab/diagrams/html/, then
 # `docker compose restart` (or `up -d`).
+#
+# Services: `web` (nginx, the SPA) + `api` (diagrams-api, the folder/file
+# save layer used by the Files sidebar — see api/server.js).
 
 services:
   web:
@@ -31,6 +34,26 @@ services:
       - "traefik.http.routers.diagrams.middlewares=diagrams-strip"
       - "traefik.http.middlewares.diagrams-strip.stripprefix.prefixes=/diagrams"
       - "traefik.http.services.diagrams.loadbalancer.server.port=80"
+
+  # voxen: the save layer behind the Files sidebar. Zero-dependency node
+  # script (api/server.js); nginx proxies /api/ to it. Every route needs the
+  # bearer token from DIAGRAMS_TOKEN (.env, chmod 600 — vault item
+  # `diagrams-api-token`). Data = plain .excalidraw files under ./data, with
+  # ./data/.trash (deletes) and ./data/.history (overwrites) for undo.
+  api:
+    image: node:20-alpine
+    container_name: diagrams-api
+    restart: unless-stopped
+    command: ["node", "/app/server.js"]
+    working_dir: /app
+    environment:
+      - DATA_ROOT=/data
+      - DIAGRAMS_TOKEN=${DIAGRAMS_TOKEN:?set DIAGRAMS_TOKEN in .env}
+    volumes:
+      - ./api/server.js:/app/server.js:ro
+      - ./data:/data
+    networks:
+      - traefik-network
 
 networks:
   traefik-network:

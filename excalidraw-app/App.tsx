@@ -37,10 +37,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { loadFromBlob } from "@excalidraw/excalidraw/data/blob";
 import { t } from "@excalidraw/excalidraw/i18n";
 
-import {
-  usersIcon,
-  share,
-} from "@excalidraw/excalidraw/components/icons";
+import { usersIcon, share } from "@excalidraw/excalidraw/components/icons";
 import { isElementLink } from "@excalidraw/element";
 import {
   bumpElementVersions,
@@ -134,6 +131,8 @@ import { ExcalidrawPlusIframeExport } from "./ExcalidrawPlusIframeExport";
 import "./index.scss";
 
 import { AppSidebar } from "./components/AppSidebar";
+import { FilesButton } from "./components/FilesButton";
+import { FilesEngine } from "./components/FilesEngine";
 import { ExportImageButtons } from "./components/ExportImageButtons";
 
 import type { CollabAPI } from "./collab/Collab";
@@ -960,6 +959,8 @@ const ExcalidrawWrapper = () => {
 
           return (
             <div className="excalidraw-ui-top-right">
+              {/* voxen: open the Files tab (folders + saved diagrams) */}
+              {excalidrawAPI && <FilesButton excalidrawAPI={excalidrawAPI} />}
               {/* voxen: one-click SVG/PNG export of the current canvas */}
               {excalidrawAPI && (
                 <ExportImageButtons excalidrawAPI={excalidrawAPI} />
@@ -1039,6 +1040,8 @@ const ExcalidrawWrapper = () => {
         />
 
         <AppSidebar />
+        {/* voxen: always-mounted save engine for the Files sidebar */}
+        {excalidrawAPI && <FilesEngine excalidrawAPI={excalidrawAPI} />}
 
         {errorMessage && (
           <ErrorDialog onClose={() => setErrorMessage("")}>
