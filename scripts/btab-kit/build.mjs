@@ -20,6 +20,7 @@ const read = (f) => fs.readFileSync(path.join(here, f), "utf8");
 const tokens = JSON.parse(read("source/tokens.json"));
 const theme = JSON.parse(read("source/theme.json"));
 const iconSvg = read("source/icon.svg");
+const wordmarkSvg = read("source/wordmark.svg");
 const metrics = JSON.parse(read("font-metrics.json")).families;
 
 const OUT = path.join(repo, "public/btab-dashboard.excalidrawlib");
@@ -452,12 +453,75 @@ const btabIcon = (k, x, y, size) => {
   });
 };
 
-// <BtabLogo>: "B" in btab-green, "tab" in currentColor (muted in the shell).
-const btabLogo = (k, x, y, size, tabColor = C.muted) =>
+// <BtabLogo>: the traced wordmark from vendor-dashboard/components/BtabLogo.tsx
+// (source/wordmark.svg). One path per letter group, each an outline plus its
+// counters; "B" is btab-green, "tab" is currentColor (muted in the shell).
+const wordmark = (() => {
+  const [, , vw, vh] = wordmarkSvg
+    .match(/viewBox="([^"]+)"/)[1]
+    .split(/\s+/)
+    .map(Number);
+  const paths = [...wordmarkSvg.matchAll(/<path([^>]*)\/>/g)].map(([, a]) => {
+    const fill = a.match(/fill="([^"]+)"/)[1];
+    const [tx, ty] = (
+      a.match(/translate\(([\d.-]+)[ ,]+([\d.-]+)\)/) || [0, 0, 0]
+    )
+      .slice(1)
+      .map(Number);
+    const subpaths = a
+      .match(/ d="([^"]+)"/)[1]
+      .split("M")
+      .slice(1)
+      .map((sub) => {
+        const n = sub.replace(/[CZ]/g, " ").trim().split(/\s+/).map(Number);
+        const pts = [];
+        // start point, then each cubic segment's end point (segments are tiny)
+        for (let i = 0; i + 1 < n.length; i += i === 0 ? 2 : 6) {
+          const j = i === 0 ? 0 : i + 4;
+          if (j + 1 < n.length) {
+            pts.push([tx + n[j], ty + n[j + 1]]);
+          }
+        }
+        return pts;
+      });
+    const box = (pts) => {
+      const xs = pts.map((q) => q[0]);
+      const ys = pts.map((q) => q[1]);
+      return [
+        Math.min(...xs),
+        Math.min(...ys),
+        Math.max(...xs),
+        Math.max(...ys),
+      ];
+    };
+    // a counter is a subpath whose box lies inside another subpath's box
+    const boxes = subpaths.map(box);
+    const isHole = boxes.map((b, i) =>
+      boxes.some(
+        (o, j) =>
+          j !== i && b[0] > o[0] && b[1] > o[1] && b[2] < o[2] && b[3] < o[3],
+      ),
+    );
+    return { brand: fill !== "currentColor", subpaths, isHole };
+  });
+  return { width: vw, height: vh, paths };
+})();
+
+// `height` is the rendered logo height (the sidebar's h-6 = 24px); `surface`
+// paints the counters so the letters read on any background.
+const btabLogo = (k, x, y, height, tabColor = C.muted, surface = C.bg2) =>
   k.group(() => {
-    const b = k.text(x, y, "B", { size, color: C.green });
-    const tab = k.text(x + b.width, y, "tab", { size, color: tabColor });
-    return b.width + tab.width;
+    const f = height / wordmark.height;
+    for (const { brand, subpaths, isHole } of wordmark.paths) {
+      subpaths.forEach((pts, i) => {
+        const fill = isHole[i] ? surface : brand ? C.green : tabColor;
+        k.line(
+          pts.map(([px, py]) => [x + px * f, y + py * f]),
+          { fill, closed: true, strokeWidth: 0.5 },
+        );
+      });
+    }
+    return wordmark.width * f;
   });
 
 // ---------------------------------------------------------------------------
@@ -624,7 +688,7 @@ const sidebar = (k, x, y, h) =>
     // vd-head: logo + "Vendor Portal" + collapse
     const headH = 68;
     k.group(() => {
-      const lw = btabLogo(k, x + 16, y + (headH - 30) / 2, 24);
+      const lw = btabLogo(k, x + 16, y + (headH - 24) / 2, 24);
       k.text(x + 16 + lw + 12, y, "Vendor Portal", {
         size: TEXT.sm,
         color: C.muted,
@@ -762,7 +826,7 @@ const ITEMS = [
     (k) => {
       // <md: sticky top bar, px-4 py-3, 57px tall, 390px phone
       k.rect(0, 0, 390, 57, { fill: C.bg2, stroke: C.border });
-      const lw = btabLogo(k, 16, 16, 20);
+      const lw = btabLogo(k, 16, (57 - 20) / 2, 20);
       k.text(16 + lw + 8, 0, "Vendor", {
         size: TEXT.sm,
         color: C.muted,
@@ -1038,7 +1102,7 @@ const ITEMS = [
       k.ellipse(22, 2, 20, 20, { fill: C.white });
     },
   ],
-  ["BtabLogo", (k) => btabLogo(k, 0, 0, 32)],
+  ["BtabLogo", (k) => btabLogo(k, 0, 0, 32, C.fg, C.bg)],
   ["BtabIcon", (k) => btabIcon(k, 0, 0, 64)],
 ];
 
