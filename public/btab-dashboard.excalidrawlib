@@ -1,0 +1,81 @@
+{
+  "type": "excalidrawlib",
+  "version": 2,
+  "source": "https://labs.voxen.dev/diagrams/",
+  "libraryItems": [
+    {
+      "id": "btab-kit:clean:Card",
+      "status": "published",
+      "created": 1790208000000,
+      "name": "Card",
+      "elements": [
+        {
+          "angle": 0,
+          "strokeColor": "#1f2937",
+          "backgroundColor": "#ffffff",
+          "fillStyle": "solid",
+          "strokeWidth": 1,
+          "strokeStyle": "solid",
+          "roughness": 0,
+          "opacity": 100,
+          "groupIds": [],
+          "frameId": null,
+          "roundness": {
+            "type": 3
+          },
+          "seed": 1,
+          "version": 1,
+          "versionNonce": 1,
+          "isDeleted": false,
+          "boundElements": null,
+          "updated": 1,
+          "link": null,
+          "locked": false,
+          "id": "stub-card",
+          "type": "rectangle",
+          "x": 0,
+          "y": 0,
+          "width": 320,
+          "height": 180
+        }
+      ]
+    },
+    {
+      "id": "btab-kit:clean:Button",
+      "status": "published",
+      "created": 1790208000000,
+      "name": "Button",
+      "elements": [
+        {
+          "angle": 0,
+          "strokeColor": "#98C800",
+          "backgroundColor": "#98C800",
+          "fillStyle": "solid",
+          "strokeWidth": 1,
+          "strokeStyle": "solid",
+          "roughness": 0,
+          "opacity": 100,
+          "groupIds": [],
+          "frameId": null,
+          "roundness": {
+            "type": 3
+          },
+          "seed": 1,
+          "version": 1,
+          "versionNonce": 1,
+          "isDeleted": false,
+          "boundElements": null,
+          "updated": 1,
+          "link": null,
+          "locked": false,
+          "id": "stub-btn",
+          "type": "rectangle",
+          "x": 0,
+          "y": 0,
+          "width": 120,
+          "height": 40
+        }
+      ]
+    }
+  ]
+}
