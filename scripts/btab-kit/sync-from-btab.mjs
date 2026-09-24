@@ -60,6 +60,16 @@ const sections = [
 fs.mkdirSync(out, { recursive: true });
 fs.writeFileSync(path.join(out, "tokens.json"), show("brand/tokens.json"));
 fs.writeFileSync(path.join(out, "icon.svg"), show("brand/icon.svg"));
+// the sidebar wordmark is inline SVG in a component: keep only viewBox + paths
+const logoTsx = show("vendor-dashboard/components/BtabLogo.tsx");
+const viewBox = logoTsx.match(/viewBox="([^"]+)"/)[1];
+const logoPaths = [...logoTsx.matchAll(/<path[^>]*\/>/g)].map((m) => m[0]);
+fs.writeFileSync(
+  path.join(out, "wordmark.svg"),
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}">${logoPaths.join(
+    "",
+  )}</svg>\n`,
+);
 fs.writeFileSync(
   path.join(out, "theme.json"),
   `${JSON.stringify({ ...theme, settingsSections: sections }, null, 2)}\n`,
