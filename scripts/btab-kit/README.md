@@ -1,9 +1,6 @@
 # BTAB dashboard kit
 
-Generates `public/btab-dashboard.excalidrawlib`: Excalidraw library items drawn
-from btab's **vendor-dashboard**, so a new service's screens can be sketched
-from real btab parts. The app loads it into everyone's Library panel
-(`excalidraw-app/data/btabKit.ts`).
+Generates `public/btab-dashboard.excalidrawlib`: Excalidraw library items drawn from btab's **vendor-dashboard**, so a new service's screens can be sketched from real btab parts. The app loads it into everyone's Library panel (`excalidraw-app/data/btabKit.ts`).
 
 ```bash
 node scripts/btab-kit/sync-from-btab.mjs   # refresh source/ from btab-api origin/main
@@ -11,9 +8,7 @@ node scripts/btab-kit/build.mjs            # regenerate the library
 node scripts/btab-kit/build.mjs --check    # fail if the committed library is stale
 ```
 
-Commit `source/` and the regenerated library together. The build is
-deterministic: ids, seeds and timestamps come from item names, so an unchanged
-kit regenerates byte-for-byte.
+Commit `source/` and the regenerated library together. The build is deterministic: ids, seeds and timestamps come from item names, so an unchanged kit regenerates byte-for-byte.
 
 ## Files
 
@@ -27,11 +22,7 @@ kit regenerates byte-for-byte.
 
 ## Items
 
-Every item exists twice: id `btab-kit:clean:<Name>` (sharp lines, `roughness 0`,
-Inter) and `btab-kit:sketch:<Name>` (hand-drawn, Excalifont). The name is the
-btab component it maps to. Each item is one outer group; composite parts are
-nested groups (select into them with double-click). Parts use the dashboard's
-default **dark** theme at 1 canvas px = 1 CSS px.
+Every item exists twice: id `btab-kit:clean:<Name>` (sharp lines, `roughness 0`, Inter) and `btab-kit:sketch:<Name>` (hand-drawn, Excalifont). The name is the btab component it maps to. Each item is one outer group; composite parts are nested groups (select into them with double-click). Parts use the dashboard's default **dark** theme at 1 canvas px = 1 CSS px.
 
 | name | btab source | size (px) |
 | --- | --- | --- |
@@ -54,19 +45,15 @@ default **dark** theme at 1 canvas px = 1 CSS px.
 | `Toggle` | the app switch | 44 × 24 |
 | `BtabLogo`, `BtabIcon` | `components/BtabLogo.tsx`, `brand/icon.svg` | — |
 
-`PageHeader`, `StatusBadge`, `TextInput`, `Select`, `Tabs`, `SettingsNav` and
-`Toggle` sit on a plate of the page background (`--background`) so their text
-reads on a white canvas; inside the shell the plate is invisible.
+`PageHeader`, `StatusBadge`, `TextInput`, `Select`, `Tabs`, `SettingsNav` and `Toggle` sit on a plate of the page background (`--background`) so their text reads on a white canvas; inside the shell the plate is invisible.
 
 ### DashboardLayout geometry (for templates)
 
-Relative to the item's top-left: sidebar `x 0–256`; the `<Page>` column is
-`x 288, w 960` (`px-8 py-8`). It already contains a PageHeader group at
-`y 32` (edit its texts or delete it) and a dashed "Page content" placeholder
-at `x 288, y 128, w 960, h 640` — delete it and place parts there.
+Relative to the item's top-left: sidebar `x 0–256`; the `<Page>` column is `x 288, w 960` (`px-8 py-8`). It already contains a PageHeader group at `y 32` (edit its texts or delete it) and a dashed "Page content" placeholder at `x 288, y 128, w 960, h 640` — delete it and place parts there.
 
 ## Known differences from the real dashboard
 
 - Excalidraw text has no weights: headings and the wordmark are regular, not bold.
 - Icons are simplified line drawings of the lucide icons.
 - Only the dark theme is generated (`source/theme.json` also holds light).
+- Excalidraw's own dark theme inverts the canvas, so in dark mode the parts (and their Library thumbnails) show inverted; the light theme shows the dashboard's true colours.
