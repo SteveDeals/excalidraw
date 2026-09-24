@@ -100,6 +100,7 @@ import {
   isCollaborationLink,
 } from "./data";
 
+import { installBtabKit } from "./data/btabKit";
 import { updateStaleImageStatuses } from "./data/FileManager";
 import { FileStatusStore } from "./data/fileStatusStore";
 import {
@@ -451,6 +452,13 @@ const ExcalidrawWrapper = () => {
     // TODO maybe remove this in several months (shipped: 24-03-11)
     migrationAdapter: LibraryLocalStorageMigrationAdapter,
   });
+
+  // voxen: BTAB dashboard kit in everyone's Library (after the IDB load above)
+  useEffect(() => {
+    if (excalidrawAPI) {
+      installBtabKit(excalidrawAPI);
+    }
+  }, [excalidrawAPI]);
 
   const [, forceRefresh] = useState(false);
 
