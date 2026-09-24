@@ -1,0 +1,41 @@
+{
+  "dark": {
+    "background": "#0d1117",
+    "background-secondary": "#161b22",
+    "background-tertiary": "#21262d",
+    "foreground": "#e6edf3",
+    "foreground-muted": "#8b949e",
+    "border": "#30363d",
+    "accent": "#2563eb",
+    "accent-hover": "#3b82f6",
+    "accent-text": "#3b82f6",
+    "positive": "#3fb950",
+    "negative": "#f85149",
+    "warning": "#d29922"
+  },
+  "light": {
+    "background": "#ffffff",
+    "background-secondary": "#f6f8fa",
+    "background-tertiary": "#eaeef2",
+    "foreground": "#1f2328",
+    "foreground-muted": "#656d76",
+    "border": "#d0d7de",
+    "accent": "#2563eb",
+    "accent-hover": "#1d4ed8",
+    "accent-text": "#1d4ed8",
+    "positive": "#1a7f37",
+    "negative": "#cf222e",
+    "warning": "#9a6700"
+  },
+  "btabGreen": "#98C800",
+  "sidebarWidth": 256,
+  "settingsSections": [
+    "Overview",
+    "Business",
+    "Payouts",
+    "Operations",
+    "AI agent",
+    "API",
+    "Notifications"
+  ]
+}
