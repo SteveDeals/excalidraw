@@ -27,3 +27,6 @@ dev-dist
 html
 meta*.json
 .claude
+
+# voxen: generated BTAB templates (uploaded to Files, not committed)
+scripts/btab-templates/out/

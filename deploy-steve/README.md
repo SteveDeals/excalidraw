@@ -42,6 +42,14 @@ Every visitor gets the **BTAB dashboard kit** in the Library panel: `public/btab
 - A kit item a user deletes comes back on the next load. That is by design: the kit is the default set.
 - The file is fetched with `cache: no-cache` and is not precached by the service worker.
 
+### Page templates (Files `BTAB/`)
+
+`List page`, `Detail page` and `Settings page` in the Files `BTAB/` folder are built from the kit's `clean` items by `scripts/btab-templates/` (layouts in `pages.mjs`). After regenerating the kit, rebuild and re-upload (overwrites keep the old version in `.history/`):
+
+```bash
+DIAGRAMS_TOKEN=$(vault-get diagrams-api-token) node scripts/btab-templates/build.mjs --upload
+```
+
 ## Scenes (shared diagrams)
 
 Scenes are `.excalidraw` files in `~/lab/diagrams/html/scenes/`. They are **deployed separately** from the app build (the app rsync excludes `scenes/`), so republishing the app never clobbers them.
